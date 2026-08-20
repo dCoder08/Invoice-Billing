@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+
 import API_URL from "../api";
+
 import Card from "../components/common/Card";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
@@ -91,14 +93,16 @@ function Customers() {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Customer name is required.";
+      newErrors.name =
+        "Customer name is required.";
     }
 
     if (
       formData.email &&
       !formData.email.includes("@")
     ) {
-      newErrors.email = "Enter a valid email address.";
+      newErrors.email =
+        "Enter a valid email address.";
     }
 
     if (
@@ -146,11 +150,15 @@ function Customers() {
 
       const data = await response.json();
 
-      console.log("Create customer response:", data);
+      console.log(
+        "Create customer response:",
+        data
+      );
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to create customer"
+          data.message ||
+            "Failed to create customer"
         );
       }
 
@@ -210,7 +218,8 @@ function Customers() {
 
     const totalOutstanding = invoices.reduce(
       (total, invoice) =>
-        total + Number(invoice.outstanding || 0),
+        total +
+        Number(invoice.outstanding || 0),
       0
     );
 
@@ -238,7 +247,8 @@ function Customers() {
           </h1>
 
           <p className="mt-1 text-sm text-gray-500">
-            Manage your customers and their information.
+            Manage your customers and their
+            information.
           </p>
         </div>
 
@@ -273,8 +283,8 @@ function Customers() {
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-              Add your first customer to start creating
-              invoices.
+              Add your first customer to start
+              creating invoices.
             </p>
 
             <div className="mt-5">

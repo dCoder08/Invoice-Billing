@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 
 function Statements() {
   const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] =
-    useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState("");
   const [statement, setStatement] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -15,9 +14,9 @@ function Statements() {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/customers"
-        );
+        setError("");
+
+        const response = await fetch("/api/customers");
 
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
@@ -27,8 +26,8 @@ function Statements() {
 
         setCustomers(data);
       } catch (err) {
-        console.error(err);
-        setError("Failed to load customers");
+        console.error("Error loading customers:", err);
+        setError("Failed to load customers.");
       }
     };
 
@@ -50,7 +49,7 @@ function Statements() {
       setError("");
 
       const response = await fetch(
-        `http://localhost:5000/api/customers/${customerId}/statement`
+        `/api/customers/${customerId}/statement`
       );
 
       const data = await response.json();
@@ -65,7 +64,7 @@ function Statements() {
 
       setStatement(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error loading statement:", err);
       setError(err.message);
       setStatement(null);
     } finally {
@@ -85,9 +84,23 @@ function Statements() {
     fetchStatement(customerId);
   };
 
+  // ==========================================
+  // FORMAT MONEY
+  // ==========================================
+
+  const formatMoney = (amount) => {
+    return Number(amount || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   return (
     <div>
-      {/* PAGE HEADER */}
+      {/* ==========================================
+          PAGE HEADER
+      ========================================== */}
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           Customer Statements
@@ -99,7 +112,10 @@ function Statements() {
         </p>
       </div>
 
-      {/* CUSTOMER SELECT */}
+      {/* ==========================================
+          CUSTOMER SELECT
+      ========================================== */}
+
       <div className="mb-6 max-w-md rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <label className="mb-2 block text-sm font-medium text-gray-700">
           Select Customer
@@ -108,7 +124,7 @@ function Statements() {
         <select
           value={selectedCustomer}
           onChange={handleCustomerChange}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         >
           <option value="">
             Select a customer
@@ -125,27 +141,39 @@ function Statements() {
         </select>
       </div>
 
-      {/* ERROR */}
+      {/* ==========================================
+          ERROR
+      ========================================== */}
+
       {error && (
         <div className="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* LOADING */}
+      {/* ==========================================
+          LOADING
+      ========================================== */}
+
       {loading && (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
+        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm text-gray-500">
             Loading statement...
           </p>
         </div>
       )}
 
-      {/* STATEMENT */}
+      {/* ==========================================
+          STATEMENT
+      ========================================== */}
+
       {!loading && statement && (
         <div className="space-y-6">
 
-          {/* CUSTOMER INFO */}
+          {/* ==========================================
+              CUSTOMER INFO
+          ========================================== */}
+
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">
               {statement.customer.name}
@@ -172,8 +200,13 @@ function Statements() {
             </div>
           </div>
 
-          {/* SUMMARY */}
+          {/* ==========================================
+              SUMMARY
+          ========================================== */}
+
           <div className="grid gap-4 md:grid-cols-3">
+
+            {/* TOTAL INVOICED */}
 
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-sm text-gray-500">
@@ -181,12 +214,13 @@ function Statements() {
               </p>
 
               <p className="mt-2 text-2xl font-bold text-gray-900">
-                ₹
-                {Number(
+                ₹{formatMoney(
                   statement.summary.totalInvoiced
-                ).toLocaleString("en-IN")}
+                )}
               </p>
             </div>
+
+            {/* TOTAL PAID */}
 
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-sm text-gray-500">
@@ -194,12 +228,13 @@ function Statements() {
               </p>
 
               <p className="mt-2 text-2xl font-bold text-green-600">
-                ₹
-                {Number(
+                ₹{formatMoney(
                   statement.summary.totalPaid
-                ).toLocaleString("en-IN")}
+                )}
               </p>
             </div>
+
+            {/* OUTSTANDING */}
 
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-sm text-gray-500">
@@ -207,16 +242,18 @@ function Statements() {
               </p>
 
               <p className="mt-2 text-2xl font-bold text-red-600">
-                ₹
-                {Number(
+                ₹{formatMoney(
                   statement.summary.outstanding
-                ).toLocaleString("en-IN")}
+                )}
               </p>
             </div>
 
           </div>
 
-          {/* INVOICE HISTORY */}
+          {/* ==========================================
+              INVOICE HISTORY
+          ========================================== */}
+
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
 
             <div className="border-b border-gray-200 p-5">
@@ -225,7 +262,8 @@ function Statements() {
               </h2>
             </div>
 
-            {statement.invoices.length === 0 ? (
+            {!statement.invoices ||
+            statement.invoices.length === 0 ? (
               <div className="p-8 text-center">
                 <p className="text-sm text-gray-500">
                   No invoices found for this customer.
@@ -238,6 +276,7 @@ function Statements() {
 
                   <thead className="bg-gray-50">
                     <tr>
+
                       <th className="px-5 py-3 font-medium text-gray-600">
                         Invoice
                       </th>
@@ -265,6 +304,7 @@ function Statements() {
                       <th className="px-5 py-3 font-medium text-gray-600">
                         Status
                       </th>
+
                     </tr>
                   </thead>
 
@@ -277,47 +317,62 @@ function Statements() {
                           className="border-t border-gray-100"
                         >
 
+                          {/* INVOICE */}
+
                           <td className="px-5 py-4 font-medium text-gray-900">
                             {invoice.invoiceNumber}
                           </td>
+
+                          {/* DATE */}
 
                           <td className="px-5 py-4 text-gray-600">
                             {invoice.date}
                           </td>
 
+                          {/* DUE DATE */}
+
                           <td className="px-5 py-4 text-gray-600">
                             {invoice.dueDate}
                           </td>
 
-                          <td className="px-5 py-4">
-                            ₹
-                            {Number(
+                          {/* AMOUNT */}
+
+                          <td className="px-5 py-4 font-medium text-gray-900">
+                            ₹{formatMoney(
                               invoice.amount
-                            ).toLocaleString(
-                              "en-IN"
                             )}
                           </td>
 
-                          <td className="px-5 py-4 text-green-600">
-                            ₹
-                            {Number(
+                          {/* PAID */}
+
+                          <td className="px-5 py-4 font-medium text-green-600">
+                            ₹{formatMoney(
                               invoice.paid
-                            ).toLocaleString(
-                              "en-IN"
                             )}
                           </td>
 
-                          <td className="px-5 py-4 font-medium">
-                            ₹
-                            {Number(
+                          {/* OUTSTANDING */}
+
+                          <td className="px-5 py-4 font-medium text-red-600">
+                            ₹{formatMoney(
                               invoice.outstanding
-                            ).toLocaleString(
-                              "en-IN"
                             )}
                           </td>
+
+                          {/* STATUS */}
 
                           <td className="px-5 py-4">
-                            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium">
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                invoice.status ===
+                                "Paid"
+                                  ? "bg-green-100 text-green-700"
+                                  : invoice.status ===
+                                    "Partially Paid"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
                               {invoice.status}
                             </span>
                           </td>
@@ -327,6 +382,7 @@ function Statements() {
                     )}
 
                   </tbody>
+
                 </table>
 
               </div>
@@ -337,7 +393,10 @@ function Statements() {
         </div>
       )}
 
-      {/* NOTHING SELECTED */}
+      {/* ==========================================
+          NOTHING SELECTED
+      ========================================== */}
+
       {!loading &&
         !statement &&
         !error && (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_URL from "../api";
 import Card from "../components/common/Card";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
@@ -24,7 +25,7 @@ function Products() {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/products"
+        `${API_URL}/api/products`
       );
 
       if (!response.ok) {
@@ -82,7 +83,7 @@ function Products() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/products",
+        `${API_URL}/api/products`,
         {
           method: "POST",
 

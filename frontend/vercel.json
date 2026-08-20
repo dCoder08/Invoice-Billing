@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://invoice-billing-production-18a1.up.railway.app/api/:path*"
+    }
+  ]
+}

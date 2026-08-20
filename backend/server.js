@@ -14,11 +14,24 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// =====================================================
+// CORS
+// =====================================================
+
+app.use(
+  cors({
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Routes
+// =====================================================
+// ROUTES
+// =====================================================
+
 app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/invoices", invoiceRoutes);
@@ -26,22 +39,30 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/auth", authRoutes);
 
-// Root route
+// =====================================================
+// ROOT ROUTE
+// =====================================================
+
 app.get("/", (req, res) => {
   res.json({
     message: "Invoice Backend is running!",
   });
 });
 
-// Railway port
+// =====================================================
+// RAILWAY PORT
+// =====================================================
+
 const PORT = process.env.PORT || 8080;
 
-// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// MySQL connection test
+// =====================================================
+// MYSQL CONNECTION TEST
+// =====================================================
+
 db.query("SELECT 1", (err) => {
   if (err) {
     console.error("MySQL connection failed:", err);

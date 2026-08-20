@@ -80,7 +80,7 @@ function Invoices() {
     const loadCustomers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/customers"
+          `${API_URL}/api/customers`
         );
 
         if (!response.ok) {
@@ -106,7 +106,7 @@ function Invoices() {
     const loadProducts = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/products"
+          `${API_URL}/api/products`
         );
 
         if (!response.ok) {
@@ -135,7 +135,7 @@ function Invoices() {
   const loadInvoices = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/invoices"
+       `${API_URL}/api/invoices`
       );
 
       if (!response.ok) {
@@ -150,7 +150,7 @@ function Invoices() {
 
           try {
             const paymentResponse = await fetch(
-              `http://localhost:5000/api/payments/invoice/${invoice.invoice_id}`
+              `${API_URL}/api/payments/invoice/${invoice.invoice_id}`
             );
 
             if (paymentResponse.ok) {
@@ -217,7 +217,7 @@ function Invoices() {
   const refreshInvoice = async (invoiceId) => {
     try {
       const invoiceResponse = await fetch(
-        `http://localhost:5000/api/invoices/${invoiceId}`
+        `${API_URL}/api/invoices/${invoiceId}`
       );
 
       if (!invoiceResponse.ok) {
@@ -227,7 +227,7 @@ function Invoices() {
       const invoiceData = await invoiceResponse.json();
 
       const paymentResponse = await fetch(
-        `http://localhost:5000/api/payments/invoice/${invoiceId}`
+        `${API_URL}/api/payments/invoice/${invoiceId}`
       );
 
       let payments = [];
@@ -535,7 +535,7 @@ function Invoices() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/invoices",
+        `${API_URL}/api/invoices`,
         {
           method: "POST",
           headers: {
@@ -706,7 +706,7 @@ function Invoices() {
   const handleViewInvoice = async (invoice) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/invoices/${invoice.id}`
+        `${API_URL}/api/invoices/${invoice.id}`
       );
 
       if (!response.ok) {
@@ -718,7 +718,7 @@ function Invoices() {
       const data = await response.json();
 
       const paymentResponse = await fetch(
-        `http://localhost:5000/api/payments/invoice/${invoice.id}`
+        `${API_URL}/api/payments/invoice/${invoice.id}`
       );
 
       let payments = [];
@@ -885,7 +885,7 @@ function Invoices() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/payments",
+        `${API_URL}/api/payments`,
         {
           method: "POST",
 
@@ -937,7 +937,7 @@ function Invoices() {
 
       if (refreshedInvoice) {
         const detailResponse = await fetch(
-          `http://localhost:5000/api/invoices/${invoiceId}`
+          `${API_URL}/api/invoices/${invoiceId}`
         );
 
         let invoiceDetails = {};
@@ -1006,7 +1006,7 @@ function Invoices() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/payments/${paymentId}/complete`,
+        `${API_URL}/api/payments/${paymentId}/complete`,
         {
           method: "PUT",
           headers: {
@@ -1041,7 +1041,7 @@ function Invoices() {
       }
 
       const detailResponse = await fetch(
-        `http://localhost:5000/api/invoices/${invoice.id}`
+        `${API_URL}/api/invoices/${invoice.id}`
       );
 
       let invoiceDetails = {};

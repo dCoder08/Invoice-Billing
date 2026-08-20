@@ -27,12 +27,26 @@ function Dashboard() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        "http://localhost:5000/api/dashboard"
-      );
+      /*
+       * IMPORTANT:
+       * Frontend runs on:
+       * http://localhost:5173
+       *
+       * /api/dashboard is sent through the Vite proxy
+       * to your Express backend.
+       *
+       * DO NOT use:
+       * `$/api/dashboard`
+       *
+       * DO NOT hardcode Railway URL while testing locally.
+       */
+
+      const response = await fetch("/api/dashboard");
 
       if (!response.ok) {
-        throw new Error("Failed to fetch dashboard data");
+        throw new Error(
+          `Failed to fetch dashboard data (${response.status})`
+        );
       }
 
       const data = await response.json();
@@ -103,31 +117,28 @@ function Dashboard() {
       value: summary.totalInvoices,
       description: "Invoices created",
     },
-
     {
       title: "Total Customers",
       value: summary.totalCustomers,
       description: "Registered customers",
     },
-
     {
       title: "Total Amount",
       value: `₹${formatMoney(summary.totalAmount)}`,
       description: "Total invoice value",
     },
-
     {
       title: "Total Paid",
       value: `₹${formatMoney(summary.totalPaid)}`,
       description: "Amount received",
     },
-
     {
       title: "Outstanding",
-      value: `₹${formatMoney(summary.totalOutstanding)}`,
+      value: `₹${formatMoney(
+        summary.totalOutstanding
+      )}`,
       description: "Amount remaining",
     },
-
     {
       title: "Overdue Invoices",
       value: summary.overdueInvoices,
@@ -190,6 +201,7 @@ function Dashboard() {
           </p>
 
           <button
+            type="button"
             onClick={fetchDashboard}
             className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
           >
@@ -224,9 +236,9 @@ function Dashboard() {
         {/* REFRESH BUTTON */}
 
         <button
+          type="button"
           onClick={fetchDashboard}
-          disabled={loading}
-          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           ↻ Refresh
         </button>
@@ -364,9 +376,7 @@ function Dashboard() {
       {summary.overdueInvoices > 0 && (
         <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5">
           <div className="flex items-start gap-3">
-            <div className="text-xl">
-              ⚠️
-            </div>
+            <div className="text-xl">⚠️</div>
 
             <div>
               <h3 className="font-semibold text-red-800">
@@ -396,9 +406,7 @@ function Dashboard() {
       {summary.overdueInvoices === 0 && (
         <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-5">
           <div className="flex items-start gap-3">
-            <div className="text-xl">
-              ✅
-            </div>
+            <div className="text-xl">✅</div>
 
             <div>
               <h3 className="font-semibold text-green-800">
@@ -406,8 +414,7 @@ function Dashboard() {
               </h3>
 
               <p className="mt-1 text-sm text-green-700">
-                There are currently no overdue
-                invoices.
+                There are currently no overdue invoices.
               </p>
             </div>
           </div>

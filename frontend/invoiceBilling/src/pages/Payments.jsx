@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_URL from "../api";
 
 function Payments() {
   // =====================================================
@@ -36,19 +37,24 @@ function Payments() {
   const loadInvoices = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/invoices"
+        `${API_URL}/api/invoices`
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch invoices");
+        throw new Error(
+          `Failed to fetch invoices (${response.status})`
+        );
       }
 
       const data = await response.json();
 
       setInvoices(data);
+
+      return data;
     } catch (err) {
       console.error("Error loading invoices:", err);
-      setError("Failed to load invoices.");
+      setError(err.message || "Failed to load invoices.");
+      return [];
     }
   };
 
@@ -59,19 +65,24 @@ function Payments() {
   const loadPayments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/payments"
+        `${API_URL}/api/payments`
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch payments");
+        throw new Error(
+          `Failed to fetch payments (${response.status})`
+        );
       }
 
       const data = await response.json();
 
       setPayments(data);
+
+      return data;
     } catch (err) {
       console.error("Error loading payments:", err);
-      setError("Failed to load payments.");
+      setError(err.message || "Failed to load payments.");
+      return [];
     }
   };
 
@@ -146,7 +157,7 @@ function Payments() {
   };
 
   // =====================================================
-  // GET PAYMENT STATUS
+  // GET INVOICE PAYMENT STATUS
   // =====================================================
 
   const getInvoicePaymentStatus = (invoice) => {
@@ -211,13 +222,6 @@ function Payments() {
     if (!invoice) {
       return payment.payment_status || "Processing";
     }
-
-    /*
-     * Payment itself is Processing/Completed.
-     *
-     * Invoice status is calculated separately:
-     * Unpaid / Partially Paid / Paid
-     */
 
     return getInvoicePaymentStatus(invoice);
   };
@@ -300,9 +304,15 @@ function Payments() {
         );
       }
 
-      // ---------------------------------------------
-      // CHECK OUTSTANDING BEFORE SUBMIT
-      // ---------------------------------------------
+      if (!formData.transaction_details.trim()) {
+        throw new Error(
+          "Transaction details are required."
+        );
+      }
+
+      // =================================================
+      // CHECK OUTSTANDING
+      // =================================================
 
       if (selectedInvoice) {
         const outstanding =
@@ -320,8 +330,12 @@ function Payments() {
         }
       }
 
+      // =================================================
+      // CREATE PAYMENT
+      // =================================================
+
       const response = await fetch(
-        "http://localhost:5000/api/payments",
+        `${API_URL}/api/payments`,
         {
           method: "POST",
 
@@ -365,9 +379,9 @@ function Payments() {
         `Payment recorded successfully! Payment ID: ${data.payment_id}`
       );
 
-      // ---------------------------------------------
+      // =================================================
       // RESET FORM
-      // ---------------------------------------------
+      // =================================================
 
       setFormData({
         invoice_id: "",
@@ -380,9 +394,9 @@ function Payments() {
         payment_status: "Completed",
       });
 
-      // ---------------------------------------------
+      // =================================================
       // REFRESH DATA
-      // ---------------------------------------------
+      // =================================================
 
       await loadPayments();
       await loadInvoices();
@@ -392,7 +406,10 @@ function Payments() {
         err
       );
 
-      setError(err.message);
+      setError(
+        err.message ||
+          "Failed to create payment."
+      );
     } finally {
       setLoading(false);
     }
@@ -410,9 +427,13 @@ function Payments() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/payments/${paymentId}/complete`,
+        `${API_URL}/api/payments/${paymentId}/complete`,
         {
           method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -429,6 +450,8 @@ function Payments() {
         "Payment marked as completed successfully."
       );
 
+      // Refresh both so invoice outstanding
+      // and payment history stay synchronized.
       await loadPayments();
       await loadInvoices();
     } catch (err) {
@@ -437,7 +460,10 @@ function Payments() {
         err
       );
 
-      setError(err.message);
+      setError(
+        err.message ||
+          "Failed to complete payment."
+      );
     }
   };
 
@@ -512,11 +538,6 @@ function Payments() {
                 const outstanding =
                   getOutstandingAmount(invoice);
 
-                const status =
-                  getInvoicePaymentStatus(
-                    invoice
-                  );
-
                 return (
                   <option
                     key={invoice.invoice_id}
@@ -557,8 +578,6 @@ function Payments() {
                 Customer:{" "}
                 {selectedInvoice.customer_name}
               </p>
-
-              {/* INVOICE AMOUNT */}
 
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-lg bg-white p-3">
@@ -604,8 +623,6 @@ function Payments() {
                   </p>
                 </div>
               </div>
-
-              {/* STATUS */}
 
               <div className="mt-3">
                 <p className="text-sm text-gray-600">
@@ -887,25 +904,22 @@ function Payments() {
                       key={payment.payment_id}
                       className="border-t border-gray-100"
                     >
-                      {/* PAYMENT ID */}
-
                       <td className="px-6 py-4 font-medium text-gray-900">
                         {payment.payment_id}
                       </td>
 
-                      {/* INVOICE */}
-
                       <td className="px-6 py-4 font-medium text-blue-600">
-                        {payment.invoice_number}
+                        {payment.invoice_number ||
+                          `INV-${String(
+                            payment.invoice_id
+                          ).padStart(4, "0")}`}
                       </td>
-
-                      {/* CUSTOMER */}
 
                       <td className="px-6 py-4 text-gray-600">
-                        {payment.customer_name}
+                        {payment.customer_name ||
+                          invoice?.customer_name ||
+                          "-"}
                       </td>
-
-                      {/* INVOICE AMOUNT */}
 
                       <td className="px-6 py-4 font-medium text-gray-900">
                         ₹
@@ -916,16 +930,12 @@ function Payments() {
                         )}
                       </td>
 
-                      {/* TOTAL PAID */}
-
                       <td className="px-6 py-4 font-medium text-green-600">
                         ₹
                         {formatMoney(
                           totalPaid
                         )}
                       </td>
-
-                      {/* OUTSTANDING */}
 
                       <td className="px-6 py-4 font-bold text-red-600">
                         ₹
@@ -934,8 +944,6 @@ function Payments() {
                         )}
                       </td>
 
-                      {/* THIS PAYMENT */}
-
                       <td className="px-6 py-4 font-medium text-gray-900">
                         ₹
                         {formatMoney(
@@ -943,32 +951,26 @@ function Payments() {
                         )}
                       </td>
 
-                      {/* DATE */}
-
                       <td className="px-6 py-4 text-gray-600">
-                        {payment.payment_date}
+                        {payment.payment_date
+                          ? String(
+                              payment.payment_date
+                            ).slice(0, 10)
+                          : "-"}
                       </td>
-
-                      {/* METHOD */}
 
                       <td className="px-6 py-4 text-gray-600">
                         {payment.payment_method ||
                           "-"}
                       </td>
 
-                      {/* TRANSACTION */}
-
                       <td className="max-w-xs px-6 py-4 text-gray-600">
                         {payment.transaction_details ||
                           "-"}
                       </td>
 
-                      {/* STATUS */}
-
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          {/* PAYMENT STATUS */}
-
                           <span
                             className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium ${
                               payment.payment_status ===
@@ -980,8 +982,6 @@ function Payments() {
                             {payment.payment_status ||
                               "Processing"}
                           </span>
-
-                          {/* INVOICE STATUS */}
 
                           <span
                             className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -998,8 +998,6 @@ function Payments() {
                           </span>
                         </div>
                       </td>
-
-                      {/* ACTION */}
 
                       <td className="px-6 py-4">
                         {payment.payment_status ===
