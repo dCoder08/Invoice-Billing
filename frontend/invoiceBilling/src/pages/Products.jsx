@@ -25,7 +25,7 @@ function Products() {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/products`
+        "/api/products"
       );
 
       if (!response.ok) {
